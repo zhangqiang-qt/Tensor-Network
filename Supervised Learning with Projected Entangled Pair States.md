@@ -27,14 +27,14 @@
 > 关于多层感知器(MLP)，YouTobe大佬3B1B讲解的很棒，视频链接附于文末。
 
 ### 2. PEPS分类器
-&emsp;&emsp;考虑一个线性映射`$W$`，得到一个向量，表示给定输入图像的`$T$`个标签之一的概率，即：
-```math
-f(x) = W \cdot \Phi(x)
-```
-其中，`$W \in \mathbb{R}^{d^{L \times L} \times T}$`，`$\cdot$`表示`$W$`与`$\Phi(x)$`之间的张量缩并。由于总的参数量达到了`$d^{L \times L} \times T$`，利用PEPS对`$W$`进行近似表示：
-```math
-W^{l, s_{1} s_{2} \cdots s_{N}}=\sum_{\sigma_{1} \sigma_{2} \cdots \sigma_{K}} T_{\sigma_{1}, \sigma_{2}}^{s_{1}} T_{\sigma_{3}, \sigma_{4}, \sigma_{5}}^{s_{2}} \cdots T_{\sigma_{k}, \sigma_{k+1}, \sigma_{k+2}, \sigma_{k+3}}^{s_{i}, l} \cdots T_{\sigma_{K-1}, \sigma_{K}}^{s_{N}}
-```
+&emsp;&emsp;考虑一个线性映射 <img src="https://latex.codecogs.com/gif.latex?W" title="W" />，得到一个向量，表示给定输入图像的 <img src="https://latex.codecogs.com/gif.latex?T" title="T" /> 个标签之一的概率，即：
+
+<p align="center"><img src="https://latex.codecogs.com/gif.latex?f(x)&space;=&space;W&space;\cdot&space;\Phi(x)" title="f(x) = W \cdot \Phi(x)" /></p>
+
+其中，<img src="https://latex.codecogs.com/gif.latex?W&space;\in&space;\mathbb{R}^{d^{L&space;\times&space;L}&space;\times&space;T}" title="W \in \mathbb{R}^{d^{L \times L} \times T}" />，· 表示 <img src="https://latex.codecogs.com/gif.latex?W" title="W" /> 与 <img src="https://latex.codecogs.com/gif.latex?\Phi(x)" title="\Phi(x)" /> 之间的张量缩并。由于总的参数量达到了 <img src="https://latex.codecogs.com/gif.latex?d^{L&space;\times&space;L}&space;\times&space;T" title="d^{L \times L} \times T" />，利用PEPS对 <img src="https://latex.codecogs.com/gif.latex?W" title="W" /> 进行近似表示：
+
+<p align="center"><img src="https://latex.codecogs.com/gif.latex?W^{l,&space;s_{1}&space;s_{2}&space;\cdots&space;s_{N}}=\sum_{\sigma_{1}&space;\sigma_{2}&space;\cdots&space;\sigma_{K}}&space;T_{\sigma_{1},&space;\sigma_{2}}^{s_{1}}&space;T_{\sigma_{3},&space;\sigma_{4},&space;\sigma_{5}}^{s_{2}}&space;\cdots&space;T_{\sigma_{k},&space;\sigma_{k&plus;1},&space;\sigma_{k&plus;2},&space;\sigma_{k&plus;3}}^{s_{i},&space;l}&space;\cdots&space;T_{\sigma_{K-1},&space;\sigma_{K}}^{s_{N}}" title="W^{l, s_{1} s_{2} \cdots s_{N}}=\sum_{\sigma_{1} \sigma_{2} \cdots \sigma_{K}} T_{\sigma_{1}, \sigma_{2}}^{s_{1}} T_{\sigma_{3}, \sigma_{4}, \sigma_{5}}^{s_{2}} \cdots T_{\sigma_{k}, \sigma_{k+1}, \sigma_{k+2}, \sigma_{k+3}}^{s_{i}, l} \cdots T_{\sigma_{K-1}, \sigma_{K}}^{s_{N}}" /></p>
+
 其中，`$K$`是虚拟指标`$\sigma_{k} \in \{1,2,\cdots,D \}$`的个数。每个张量都有一个物理指标`$s_{i} \in \{1,2,\cdots,d\}$`，与输入向量`$\Phi(x_{i})$`相关联。在中心张量处，有一个多余的标签索引`$l \in \{1,2,\cdots,T\}$`，产生模型的输出向量。这些张量的值随机初始化为`$0$`到`$0.01$`的实数，构成了模型的可训练参数`$θ$`。
 
 <center>
