@@ -37,11 +37,7 @@
 
 其中，<img src="https://latex.codecogs.com/gif.latex?K" title="K" /> 是虚拟指标 <img src="https://latex.codecogs.com/gif.latex?\sigma_{k}&space;\in&space;\{1,2,\cdots,D&space;\}" title="\sigma_{k} \in \{1,2,\cdots,D \}" /> 的个数。每个张量都有一个物理指标 <img src="https://latex.codecogs.com/gif.latex?s_{i}&space;\in&space;\{1,2,\cdots,d\}" title="s_{i} \in \{1,2,\cdots,d\}" />，与输入向量 <img src="https://latex.codecogs.com/gif.latex?\Phi(x_{i})" title="\Phi(x_{i})" /> 相关联。在中心张量处，有一个多余的标签索引 <img src="https://latex.codecogs.com/gif.latex?l&space;\in&space;\{1,2,\cdots,T\}" title="l \in \{1,2,\cdots,T\}" />，产生模型的输出向量。这些张量的值随机初始化为 <img src="https://latex.codecogs.com/gif.latex?0" title="0" /> 到 <img src="https://latex.codecogs.com/gif.latex?0.01" title="0.01" /> 的实数，构成了模型的可训练参数 <img src="https://latex.codecogs.com/gif.latex?\theta" title="\theta" />。
 
-<center>
-
-![peps监督学习模型.png](https://note.youdao.com/yws/res/7/WEBRESOURCE1cc5c766f542ba9edca90d3616b6c927)
-
-</center>
+<p align="center"><img src="https://github.com/zhangqiang-qt/Tensor-Network/blob/main/PEPSSL/PEPS%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B.png" /></p>
 
 ### 3. 训练算法
 &emsp;&emsp;**训练的目的是**调整参数 <img src="https://latex.codecogs.com/gif.latex?\theta" title="\theta" />，使训练标签和预测标签之间的差值达到最小。通过最小化表示预测标签分布与对应训练标签分布的 <img src="https://latex.codecogs.com/gif.latex?one-hot" title="one-hot" /> 向量之间距离的损失函数 <img src="https://latex.codecogs.com/gif.latex?\mathcal{L}" title="\mathcal{L}" /> 来实现，其定义如下：
@@ -63,62 +59,34 @@
 #### 边界MPS方法
 &emsp;&emsp;我们已经提及，PEPS是一个具有二维结构的张量网络，因此，将位于最底层的一行张量看作MPS，剩下的所有行视为作用在该MPS上的算符。当每一行作用在MPS上时，需要将MPS的键维裁剪为最大值 <img src="https://latex.codecogs.com/gif.latex?\chi" title="\chi" />。而为了获得最小的裁剪误差，首先对MPS使用QR分解，以此确保MPS是正确的正则形式(canonical form)。然后，再对正则化MPS的中心张量使用SVD分解，确保裁剪是最优的。
 
-<center>
-
-![bmps.png](https://note.youdao.com/yws/res/b/WEBRESOURCEdedb1c75e6d16c5781a9d0cf9d4a142b)
-
-</center>
+<p align="center"><img src="https://github.com/zhangqiang-qt/Tensor-Network/blob/main/PEPSSL/BMPS.png" /></p>
 
 &emsp;&emsp;由边界MPS方法实现的近似缩并的总的计算复杂度为 <img src="https://latex.codecogs.com/gif.latex?O(N\chi^{3}D^{6})" title="O(N\chi^{3}D^{6})" />。更有效的方法是从顶层MPS和底层MPS对PEPS进行并行缩并，此时的计算复杂度为 <img src="https://latex.codecogs.com/gif.latex?O(T\chi^{3}D^{2})" title="O(T\chi^{3}D^{2})" />。
 
-<center>
-
-![边界mps缩并.png](https://note.youdao.com/yws/res/9/WEBRESOURCE068b18a50e836a99fc05ca8c1932ff49)
-
-</center>
+<p align="center"><img src="https://github.com/zhangqiang-qt/Tensor-Network/blob/main/PEPSSL/%E8%BE%B9%E7%95%8CMPS%E7%BC%A9%E5%B9%B6.png" /></p>
 
 &emsp;&emsp;除了预测标签和评估损失函数的正向过程外，还需要逆向过程来计算损失函数相对于训练参数的梯度：利用**张量网络的自动微分技术**。自动微分技术的关键在于将张量网络算法视为关于张量和代数操作的可追踪计算图，然后通过简单的链式法则，可以沿着这个计算图实现反向传播过程，得到损失函数 <img src="https://latex.codecogs.com/gif.latex?\mathcal{L}" title="\mathcal{L}" /> 对各个参数的梯度值(就是冉仕举视频中的求梯度的那种方式)。最后，直接使用随机梯度下降和Adam优化器来更新可训练参数 <img src="https://latex.codecogs.com/gif.latex?\theta" title="\theta" />。如果参数均为非负值，优化的稳定性能得到很大的改善。
 
 ## 三、实验结果
 &emsp;&emsp;关于实验结果，需要关注的是对于初始图像的处理。如果采用的是直积态的方式，那么将 <img src="https://latex.codecogs.com/gif.latex?28\times28" title="28\times28" /> 的图像以 <img src="https://latex.codecogs.com/gif.latex?2\times2" title="2\times2" /> 的块大小与 <img src="https://latex.codecogs.com/gif.latex?14\times14" title="14\times14" /> 的PEPS中的张量进行缩并。以 <img src="https://latex.codecogs.com/gif.latex?6\times6" title="6\times6" /> 的图像为例(如下图所示)，每个像素值均表示为二维向量的形式。对 <img src="https://latex.codecogs.com/gif.latex?2\times2" title="2\times2" /> 的块大小(左上角)，求其张量积得到直积态与PEPS中的张量进行缩并，以此类推。
 
-<center>
-
-![peps.png](https://note.youdao.com/yws/res/7/WEBRESOURCEa61f8e92d374920465f3eb20d8cdb187)
-
-</center>
+<p align="center"><img src="https://github.com/zhangqiang-qt/Tensor-Network/blob/main/PEPSSL/PEPS.png" /></p>
 
 &emsp;&emsp;第二种方式是利用卷积神经网络对图像进行处理，然后将处理后的数据同样地与PEPS进行缩并：利用 10 个大小为 <img src="https://latex.codecogs.com/gif.latex?5\times&space;5" title="5\times 5" /> 的卷积核以步长为 1 对 <img src="https://latex.codecogs.com/gif.latex?28\times28" title="28\times28" /> 的图像进行卷积操作(需要将原始图像补 0 为 <img src="https://latex.codecogs.com/gif.latex?32\times32" title="32\times32" /> 的图像)，每一次卷积都能得到 <img src="https://latex.codecogs.com/gif.latex?28\times28" title="28\times28" /> 的图像，然后经过非线性激活层和 <img src="https://latex.codecogs.com/gif.latex?2\times2" title="2\times2" /> 的最大池化层之后，得到 <img src="https://latex.codecogs.com/gif.latex?14\times14" title="14\times14" /> 的输出。经过 10 次这样的卷积操作之后，最终得到 <img src="https://latex.codecogs.com/gif.latex?14\times14\times10" title="14\times14\times10" /> 的三阶张量。同样地，取 <img src="https://latex.codecogs.com/gif.latex?2\times2" title="2\times2" /> 的块大小与 <img src="https://latex.codecogs.com/gif.latex?14\times14" title="14\times14" /> 的PEPS中的张量进行缩并。与方式一的不同之处在于：方式一中PEPS的物理指标维度为 16，而卷积之后的物理指标维度为 10。两种方式中，PEPS的键维均设置为 <img src="https://latex.codecogs.com/gif.latex?\chi=10" title="\chi=10" />。
 
-<center>
-
-![cnnpeps.png](https://note.youdao.com/yws/res/1/WEBRESOURCE2732b3200704fcf5cdfc34e127385501)
-
-</center>
+<p align="center"><img src="https://github.com/zhangqiang-qt/Tensor-Network/blob/main/PEPSSL/CNNPEPS.png" /></p>
 
 &emsp;&emsp;数据集采用的是经典的MNIST和Fashion-MNIST数据集，其包含的具体数据如下图所示。
 
-<center>
-
-![mnist and fashionmnist.png](https://note.youdao.com/yws/res/0/WEBRESOURCEf9565d0e840bdbde9854ae78e9e919a0)
-
-</center>
+<p align="center"><img src="https://github.com/zhangqiang-qt/Tensor-Network/blob/main/PEPSSL/MNIST%20and%20FashionMNIST.png" /></p>
 
 将论文中提到的两种方式分别在MNIST数据集中进行训练与测试，可以看出，PEPS和CNN-PEPS的准确度明显比MPS结构好很多。键维 <img src="https://latex.codecogs.com/gif.latex?D=4" title="D=4" /> 时，PEPS的测试准确度超过了传统的MLP；键维 <img src="https://latex.codecogs.com/gif.latex?D=2" title="D=2" /> 时，CNN-PEPS的测试准确度也超过了CNN-MLP。并且，键维 <img src="https://latex.codecogs.com/gif.latex?D=5" title="D=5" /> 时，两者达到最优的准确度。
 
-<center>
-
-![mnist准确率.png](https://note.youdao.com/yws/res/7/WEBRESOURCE6749be122f3f0fe086439bff78c61497)
-
-</center>
+<p align="center"><img src="https://github.com/zhangqiang-qt/Tensor-Network/blob/main/PEPSSL/MNIST%E5%87%86%E7%A1%AE%E7%8E%87.png" /></p>
 
 而在Fashion-MNIST数据集中，相比于MPS、PEPS和MPS结合TTN这三种张量网络结构，CNN-PEPS具有更好的效果。
 
-<center>
-
-![fashionmnist准确率.png](https://note.youdao.com/yws/res/9/WEBRESOURCEbdbe7f5f30f9764800a3bccfe6efb219)
-
-</center>
+<p align="center"><img src="https://github.com/zhangqiang-qt/Tensor-Network/blob/main/PEPSSL/fashionMNIST%E5%87%86%E7%A1%AE%E7%8E%87.png" /></p>
 
 ## 论文中的疑问
 - 边界MPS方法对PEPS进行收缩的时间复杂度 <img src="https://latex.codecogs.com/gif.latex?O(N\chi^{3}D^{6})" title="O(N\chi^{3}D^{6})" />，和同时收缩时的时间复杂度 <img src="https://latex.codecogs.com/gif.latex?O(T\chi^{3}D^{2})" title="O(T\chi^{3}D^{2})" />，不清楚是如何计算出来的；
